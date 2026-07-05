@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les jeux Yakari</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🪶</text></svg>">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  min-height: 100%;
+  background: #2b3a55;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 40px;
+  gap: 10px;
+}
+h1 {
+  color: #f7d774;
+  font-size: clamp(30px, 6vw, 52px);
+  text-shadow: 3px 3px 0 #4a3218;
+  text-align: center;
+}
+p.tagline {
+  color: #fff8e7;
+  font-size: clamp(15px, 2.5vw, 20px);
+  text-align: center;
+  margin-bottom: 18px;
+}
+.games {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  width: 100%;
+  max-width: 900px;
+}
+a.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #fff8e7;
+  border: 5px solid #b98a2f;
+  border-radius: 22px;
+  padding: 22px 16px;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.15s;
+}
+a.card:hover, a.card:active { transform: scale(1.04) rotate(-1deg); }
+.card .emoji { font-size: 52px; }
+.card .name {
+  color: #4a3218;
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: bold;
+}
+.card .desc { color: #7a5c38; font-size: clamp(13px, 2vw, 16px); }
+.card .ep {
+  background: #f7d774;
+  border: 2px solid #b98a2f;
+  border-radius: 20px;
+  padding: 2px 12px;
+  color: #4a3218;
+  font-size: 13px;
+  font-weight: bold;
+}
+footer { color: #8fa0bd; font-size: 13px; margin-top: 26px; text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>🪶 Les jeux Yakari</h1>
+<p class="tagline">Quatre aventures à jouer avec papa ou maman — touche ce qui brille !</p>
+<div class="games">
+  <a class="card" href="yakari-ep16-yakari-et-le-grizzly/">
+    <span class="emoji">🐻</span>
+    <span class="name">Yakari et le grizzly</span>
+    <span class="desc">Le gros grizzly grognon qui ne savait pas nager</span>
+    <span class="ep">Épisode 16</span>
+  </a>
+  <a class="card" href="yakari-ep17-les-prisonniers-de-l-ile/">
+    <span class="emoji">🏝️</span>
+    <span class="name">Yakari sur l'île</span>
+    <span class="desc">Prisonniers de l'île avec le petit élan blessé</span>
+    <span class="ep">Épisode 17</span>
+  </a>
+  <a class="card" href="yakari-ep21-yakari-et-le-condor/">
+    <span class="emoji">🦅</span>
+    <span class="name">Yakari et le condor</span>
+    <span class="desc">La rivière endormie et le vol dans les nuages</span>
+    <span class="ep">Épisode 21</span>
+  </a>
+  <a class="card" href="yakari-ep23-le-mystere-de-la-falaise/">
+    <span class="emoji">🦴</span>
+    <span class="name">Le mystère de la falaise</span>
+    <span class="desc">Le squelette géant et le voyage au temps des volcans</span>
+    <span class="ep">Épisode 23</span>
+  </a>
+</div>
+<footer>
+  Jeux façon Game Boy Color, sans compte ni installation.<br>
+  Flèches du clavier, croix tactile, ou touche directement la carte : Yakari y va tout seul.
+</footer>
+</body>
+</html>

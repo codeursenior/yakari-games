@@ -74,3 +74,11 @@ Durée : environ 10 minutes.
 - Effets : neige, nuit avec halos de lumière, aube, cœurs, pouf, étincelles,
   éclaboussures ; grizzly dessiné en 5 poses (assis, endormi, debout, nageur,
   joyeux).
+
+## Moteur partagé
+
+Ce jeu utilise le moteur commun [`../yakari-engine/`](../yakari-engine/engine.js)
+(rendu, déplacement case par case, BFS toucher-pour-y-aller, audio, voix,
+effets, plumes, overlay). Le dossier du jeu ne contient que ses cartes, ses
+sprites et ses phases (`game.js`). Il se lance toujours en double-cliquant
+`index.html`, tant que le dossier `yakari-engine/` est présent à côté.

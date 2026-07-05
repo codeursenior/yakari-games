@@ -67,3 +67,11 @@ Durée : environ 10 minutes.
   le jeu ne se fige pas si le navigateur met les animations en pause.
 - Effets : nuit avec halos de lumière, aube, teinte rouge d'éruption, fumée
   du cratère, cœurs, pouf, étincelles.
+
+## Moteur partagé
+
+Ce jeu utilise le moteur commun [`../yakari-engine/`](../yakari-engine/engine.js)
+(rendu, déplacement case par case, BFS toucher-pour-y-aller, audio, voix,
+effets, plumes, overlay). Le dossier du jeu ne contient que ses cartes, ses
+sprites et ses phases (`game.js`). Il se lance toujours en double-cliquant
+`index.html`, tant que le dossier `yakari-engine/` est présent à côté.
