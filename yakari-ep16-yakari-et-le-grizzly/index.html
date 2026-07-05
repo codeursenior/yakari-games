@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Yakari et le grizzly — l'aventure</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🐻</text></svg>">
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="feathers"></div>
+    <button id="soundToggle" title="Activer ou couper la voix">🔊</button>
+  </div>
+  <div id="stageWrap">
+    <canvas id="game" width="480" height="320"></canvas>
+    <div id="dpad">
+      <button data-dir="up" class="dpadBtn dpadUp">▲</button>
+      <button data-dir="left" class="dpadBtn dpadLeft">◀</button>
+      <button data-dir="right" class="dpadBtn dpadRight">▶</button>
+      <button data-dir="down" class="dpadBtn dpadDown">▼</button>
+    </div>
+    <div id="overlay">
+      <h1 id="overlayTitle">Yakari et le grizzly</h1>
+      <p id="overlaySub">L'aventure du gros grizzly grognon — EP16</p>
+      <button id="overlayBtn">▶ Jouer</button>
+    </div>
+  </div>
+  <div id="narration">
+    <button id="replayVoice" title="Réécouter">🗣️</button>
+    <p id="narrationText"></p>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
