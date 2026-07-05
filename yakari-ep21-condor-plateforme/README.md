@@ -32,7 +32,15 @@ saut, arc à flèches et... la possibilité de perdre !
   Aigle laisse tomber un carquois (anti-blocage).
 - Les ennemis (dans certains niveaux seulement) : boules de neige (niv. 3),
   corbeaux (niv. 4), guêpes (niv. 5). Une flèche les fait disparaître en
-  « pouf », sans violence.
+  « pouf », sans violence. On peut aussi les écraser en sautant dessus.
+- **Entre deux niveaux**, un extrait de 15-20 s de l'épisode (vidéo YouTube
+  de la chaîne officielle « YAKARI OFFICIEL ») fait la transition. Les
+  horodatages sont dans `CUTSCENES` en tête de `game.js` — à ajuster là si
+  un extrait ne tombe pas sur la bonne scène. Le bouton « Continuer
+  l'aventure » passe l'extrait à tout moment (et rien ne bloque si la vidéo
+  est indisponible).
+- La narration vocale prend une voix grave et posée, façon Grand Aigle
+  (meilleure voix française masculine disponible sur l'appareil).
 
 ## Commandes
 

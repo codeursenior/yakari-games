@@ -10,11 +10,28 @@
  *    lents, sauts courts, réapparition au dernier endroit sûr en cas de chute.
  *  - L'arc arrive au niveau 3. Les flèches sont limitées : on ramasse des
  *    carquois (+3 flèches) dans les niveaux. Sans flèche, on ne tire plus.
+ *  - Entre deux niveaux, un court extrait de l'épisode (YouTube officiel)
+ *    fait la transition — voir CUTSCENES ci-dessous pour les horodatages.
  */
 
 const TILE = 16, ROWS = 20, VIEW_W = 480, VIEW_H = 320;
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+// Le canvas fait 2× la taille logique : rendu plus fin, moins pixelisé.
+const SCALE = canvas.width / VIEW_W;
+
+/* Extraits de l'épisode 21 (chaîne YouTube « YAKARI OFFICIEL ») joués
+ * entre les niveaux. Clé = niveau qui suit l'extrait (index 0-5).
+ * start/end en secondes dans la vidéo — AJUSTER ICI si un extrait ne
+ * tombe pas sur la bonne scène. 15-20 s maximum par extrait. */
+const EPISODE_VIDEO = "qG0bT2BAC_s"; // YAKARI - EP21 - Yakari et le Condor
+const CUTSCENES = {
+  1: { start: 95,  end: 113, texte: "La marmotte est réveillée... direction le barrage du castor !" },
+  2: { start: 250, end: 268, texte: "Grand Aigle a parlé : l'eau vient de la montagne !" },
+  3: { start: 420, end: 438, texte: "Le condor emmène Yakari tout là-haut, dans les nuages !" },
+  4: { start: 540, end: 558, texte: "Le vol se termine : voilà le ruisseau... mais il est tout sec !" },
+  5: { start: 660, end: 678, texte: "L'eau coule à nouveau ! Tous les amis font la fête !" },
+};
 
 /* ============================== Audio ============================== */
 
@@ -52,11 +69,20 @@ const sfx = {
 
 /* ============================ Narration ============================ */
 
+/* La voix du narrateur imite Grand Aigle : grave, lente et posée. On
+ * choisit la meilleure voix française masculine disponible sur l'appareil
+ * (les noms varient selon macOS / iOS / Android / Windows). */
 let frVoice = null;
 function pickVoice() {
   if (!("speechSynthesis" in window)) return;
-  const vs = speechSynthesis.getVoices();
-  frVoice = vs.find(v => v.lang && v.lang.startsWith("fr")) || null;
+  const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith("fr"));
+  const prefs = ["thomas", "nicolas", "jacques", "daniel", "grandpa", "google français", "microsoft paul", "microsoft claude"];
+  frVoice = null;
+  for (const p of prefs) {
+    const v = vs.find(v => v.name.toLowerCase().includes(p));
+    if (v) { frVoice = v; break; }
+  }
+  if (!frVoice) frVoice = vs.find(v => v.localService) || vs[0] || null;
 }
 if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 
@@ -66,7 +92,7 @@ function say(text) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "fr-FR"; if (frVoice) u.voice = frVoice;
-  u.rate = 0.95; u.pitch = 1.1;
+  u.rate = 0.82; u.pitch = 0.65; // voix de sage, façon Grand Aigle
   speechSynthesis.speak(u);
 }
 function narrate(text) {
@@ -151,9 +177,6 @@ const LEVELS = [
       const l = L(96);
       l.ground(0, 20); l.ground(23, 42); l.ground(45, 62, 16); l.ground(66, 95);
       l.plat(28, 31, 14); l.plat(50, 53, 13); l.plat(70, 72, 14);
-      l.row(16, "F", 8, 12, 16); l.row(13, "F", 28, 29, 30, 31);
-      l.row(15, "F", 21, 22, 43, 44); l.row(12, "F", 50, 53); l.row(14, "F", 63, 64, 65);
-      l.row(13, "F", 70, 72); l.row(16, "F", 86, 88);
       l.row(16, "T", 5, 35, 58); l.put(88, 16, "T");
       l.row(16, "*", 10, 18, 26, 47, 68, 75, 83);
       l.put(15, 16, "*"); l.put(55, 15, "*");
@@ -174,9 +197,6 @@ const LEVELS = [
       l.ground(59, 60, 13); /* le barrage */
       l.ground(61, 80); l.ground(84, 103);
       l.plat(24, 27, 14); l.plat(46, 49, 13); l.plat(94, 96, 14);
-      l.row(16, "F", 6, 10, 14); l.row(15, "F", 18, 19, 35, 36);
-      l.row(13, "F", 24, 27); l.row(12, "F", 46, 49);
-      l.row(15, "F", 64, 66, 68); l.row(16, "F", 81, 82, 83, 90);
       l.put(59, 12, "B");
       l.row(15, "~", 61, 62, 63, 64, 65, 66);
       l.row(16, "T", 4, 30, 55, 76); l.row(16, "%", 12, 42, 70, 88);
@@ -198,8 +218,6 @@ const LEVELS = [
       l.ground(45, 60, 13); l.ground(61, 74, 11); l.ground(77, 90, 11); l.ground(91, 103, 9);
       l.plat(43, 44, 12);
       l.put(5, 16, "A"); l.put(30, 12, "A"); l.put(48, 12, "A"); l.put(79, 10, "A");
-      l.row(16, "F", 8, 11); l.row(14, "F", 18, 22, 26); l.row(12, "F", 32, 36, 40);
-      l.row(12, "F", 52, 56); l.row(10, "F", 64, 68, 72, 82, 86); l.row(8, "F", 93, 95);
       l.put(22, 14, "s"); l.put(52, 12, "s"); l.put(84, 10, "s");
       l.row(16, "%", 3, 10); l.row(14, "%", 17, 25); l.row(12, "%", 31, 41);
       l.put(98, 8, "C"); l.put(102, 8, "E");
@@ -223,10 +241,6 @@ const LEVELS = [
       l.plat(100, 111, 15);
       l.put(31, 13, "G"); l.put(67, 11, "G");
       l.put(13, 14, "A"); l.put(58, 12, "A"); l.put(85, 15, "A");
-      l.row(15, "F", 3, 5); l.row(14, "F", 11, 15); l.row(15, "F", 20, 24);
-      l.row(12, "F", 38, 42); l.row(14, "F", 47, 51); l.row(12, "F", 56, 60);
-      l.row(13, "F", 74, 78); l.row(15, "F", 83, 87); l.row(13, "F", 92, 96);
-      l.row(14, "F", 102, 104);
       l.put(21, 12, "c"); l.put(49, 10, "c"); l.put(76, 10, "c"); l.put(94, 10, "c");
       l.put(106, 14, "C"); l.put(109, 14, "E");
       return l;
@@ -244,8 +258,6 @@ const LEVELS = [
       l.plat(32, 35, 14); l.plat(58, 61, 14);
       for (let y = 12; y <= 16; y++) { l.put(90, y, "R"); l.put(91, y, "R"); }
       l.put(8, 16, "A"); l.put(44, 16, "A"); l.put(68, 16, "A"); l.put(86, 16, "A");
-      l.row(16, "F", 5, 12, 18); l.row(15, "F", 25, 26, 49, 50, 51);
-      l.row(13, "F", 32, 35, 58, 61); l.row(14, "F", 74, 76); l.row(16, "F", 82, 84);
       l.put(16, 15, "g"); l.put(38, 14, "g"); l.put(62, 15, "g"); l.put(75, 13, "g");
       l.row(16, "T", 21, 55); l.row(16, "*", 30, 65, 81);
       l.put(99, 16, "E");
@@ -254,7 +266,7 @@ const LEVELS = [
   },
   { /* ------------------- Niveau 6 ------------------- */
     name: "La fête de la rivière", theme: "party", spawn: [2, 16],
-    intro: "Hourra, l'eau est revenue ! Tous les amis font la fête au bord de la rivière. Va les saluer un par un, ramasse les plumes, et rejoins le grand totem !",
+    intro: "Hourra, l'eau est revenue ! Tous les amis font la fête au bord de la rivière. Va les saluer un par un et rejoins le grand totem !",
     talks: {
       P: "Petit Tonnerre hennit de joie : l'eau est revenue !",
       B: "Le castor tape sa queue dans l'eau : merci Yakari !",
@@ -267,8 +279,6 @@ const LEVELS = [
       l.plat(22, 24, 14); l.plat(46, 48, 14);
       l.put(14, 16, "P"); l.put(28, 16, "B"); l.put(42, 16, "M"); l.put(56, 16, "Q");
       l.put(70, 14, "C");
-      l.row(16, "F", 5, 8, 11, 18, 33, 36, 39, 51, 60, 63, 66, 74, 78);
-      l.row(13, "F", 22, 23, 24, 46, 47, 48);
       l.row(16, "T", 3, 31, 59, 80); l.row(16, "*", 7, 16, 26, 38, 50, 62, 72, 82);
       l.put(84, 16, "E");
       return l;
@@ -283,7 +293,7 @@ const GRAV = 0.42, JUMP_V = -7.4, SPEED = 1.9, MAXFALL = 7;
 let state = "title";       // title | play | fade | gameover | victory
 let levelIndex = 0;
 let grid = null, levelW = 0, level = null;
-let hearts = 3, arrowCount = 0, hasBow = false, feathersGot = 0;
+let hearts = 3, arrowCount = 0, hasBow = false;
 let boulderHp = 3, waterFlows = false, emptyWarned = false, emptySince = 0;
 let entities = [], enemies = [], arrows = [], particles = [];
 let cam = 0, tick = 0;
@@ -315,7 +325,7 @@ function loadLevel(i) {
 
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < levelW; x++) {
     const c = grid[y][x];
-    if ("FAEMBQGPC".includes(c)) {
+    if ("AEMBQGPC".includes(c)) {
       entities.push({ chr: c, x: x * TILE + 8, y: y * TILE + 8, talked: false, taken: false, bob: (x * 7) % 20 });
       grid[y][x] = " ";
     } else if (c === "s" || c === "c" || c === "g") {
@@ -552,9 +562,7 @@ function updateEntities() {
     const dx = (e.x) - (p.x + p.w / 2), dy = (e.y) - (p.y + p.h / 2);
     const near = Math.abs(dx) < 14 && Math.abs(dy) < 16;
     const close = Math.abs(dx) < 26 && Math.abs(dy) < 30;
-    if (e.chr === "F" && near) {
-      e.taken = true; feathersGot++; sfx.pick(); burst(e.x, e.y, "#f7d774", 6);
-    } else if (e.chr === "A" && near) {
+    if (e.chr === "A" && near) {
       e.taken = true; arrowCount = Math.min(arrowCount + 3, 9); sfx.quiver();
       burst(e.x, e.y, "#8a5a33", 6);
       if (hasBow) narrate("Un carquois ! Plus 3 flèches !");
@@ -587,13 +595,43 @@ function levelComplete() {
   if (levelIndex === LEVELS.length - 1) {
     state = "victory";
     narrate("Bravo ! Yakari et le condor ont sauvé la rivière ! Tous les animaux te disent merci. À bientôt pour une nouvelle aventure !");
-    showOverlay("🎉 Bravo !", "Yakari et le condor ont sauvé la rivière ! Tu as gagné " + feathersGot + " plumes. Hugh !", "↻ Rejouer");
+    showOverlay("🎉 Bravo !", "Yakari et le condor ont sauvé la rivière ! Tous les animaux te disent merci. Hugh !", "↻ Rejouer");
   } else {
     state = "fade";
     fade.alpha = 0; fade.dir = 1;
-    fade.cb = () => { loadLevel(levelIndex + 1); state = "play"; fade.dir = -1; };
+    fade.cb = () => startCutscene(levelIndex + 1);
   }
 }
+
+/* ==================== Extraits de l'épisode ======================== */
+
+const cutsceneEl = document.getElementById("cutscene");
+const cutsceneFrame = document.getElementById("cutsceneFrame");
+const cutsceneText = document.getElementById("cutsceneText");
+let pendingLevel = 0;
+
+function startCutscene(next) {
+  const cs = CUTSCENES[next];
+  if (!cs) { loadLevel(next); state = "play"; fade.dir = -1; return; }
+  state = "cutscene";
+  pendingLevel = next;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  cutsceneText.textContent = cs.texte;
+  cutsceneFrame.src = "https://www.youtube-nocookie.com/embed/" + EPISODE_VIDEO +
+    "?start=" + cs.start + "&end=" + cs.end +
+    "&autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&fs=0&hl=fr";
+  cutsceneEl.classList.remove("hidden");
+}
+
+function endCutscene() {
+  cutsceneFrame.src = "about:blank"; // coupe la vidéo et le son
+  cutsceneEl.classList.add("hidden");
+  loadLevel(pendingLevel);
+  state = "play";
+  fade.alpha = 1; fade.dir = -1;
+}
+
+document.getElementById("cutsceneBtn").addEventListener("click", endCutscene);
 
 /* =========================== Particules ============================ */
 
@@ -622,6 +660,9 @@ const THEMES = {
 /* ============================== Rendu ============================== */
 
 function render() {
+  // Tout le jeu est dessiné en coordonnées 480×320 ; le canvas fait 2×
+  // cette taille, d'où un trait fin et lisse (pas de gros pixels).
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
   const th = THEMES[level ? level.theme : "meadow"];
   const g = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   g.addColorStop(0, th.skyTop); g.addColorStop(1, th.skyBot);
@@ -705,12 +746,22 @@ function drawTiles(th) {
   for (let ty = 0; ty < ROWS; ty++) for (let tx = x0; tx <= x1; tx++) {
     const c = grid[ty][tx], px = tx * TILE, py = ty * TILE;
     if (c === "#") {
-      ctx.fillStyle = (tx + ty) % 2 ? th.dirt : th.dirt2;
+      ctx.fillStyle = th.dirt;
       ctx.fillRect(px, py, TILE, TILE);
+      // quelques cailloux arrondis, déterministes (pas de damier)
+      if ((tx * 7 + ty * 13) % 4 === 0) {
+        ctx.fillStyle = th.dirt2;
+        ctx.beginPath();
+        ctx.ellipse(px + 4 + (tx % 3) * 3, py + 7 + (ty % 2) * 4, 2.2, 1.6, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
       if (tileAt(tx, ty - 1) !== "#") { // herbe / neige / roche au sommet
         ctx.fillStyle = th.top;
-        ctx.fillRect(px, py, TILE, 5);
-        ctx.fillRect(px + 2, py + 5, 3, 2); ctx.fillRect(px + 9, py + 5, 3, 2);
+        ctx.fillRect(px, py, TILE, 4);
+        ctx.beginPath(); // bosses arrondies sous la couche d'herbe
+        ctx.arc(px + 4, py + 4, 2.6, 0, Math.PI);
+        ctx.arc(px + 11, py + 4, 2.6, 0, Math.PI);
+        ctx.fill();
       }
     } else if (c === "=") {
       if (level.theme === "sky") { // nuage-plateforme
@@ -723,11 +774,11 @@ function drawTiles(th) {
         ctx.fillRect(px, py + 10, TILE, 4);
       } else {
         ctx.fillStyle = th.plat;
-        ctx.fillRect(px, py + 2, TILE, 8);
-        ctx.fillStyle = "rgba(0,0,0,0.15)";
-        ctx.fillRect(px, py + 8, TILE, 2);
+        rr(px - 0.5, py + 2, TILE + 1, 8, 2.5); ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.12)";
+        ctx.fillRect(px, py + 7, TILE, 2);
         ctx.fillStyle = level.theme === "snow" ? "#ffffff" : th.top;
-        ctx.fillRect(px, py, TILE, 3);
+        rr(px - 0.5, py, TILE + 1, 3.5, 1.5); ctx.fill();
       }
     } else if (c === "R") {
       ctx.fillStyle = "#8d8378";
@@ -781,14 +832,7 @@ function drawWater() {
 function drawEntity(e) {
   const bob = Math.sin((tick + e.bob) * 0.08) * 2;
   const x = e.x, y = e.y;
-  if (e.chr === "F") { // plume
-    ctx.save(); ctx.translate(x, y + bob); ctx.rotate(0.3);
-    ctx.fillStyle = "#f7d774";
-    ctx.beginPath(); ctx.ellipse(0, 0, 3, 7, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#e08a3c";
-    ctx.fillRect(-0.7, -7, 1.4, 14);
-    ctx.restore();
-  } else if (e.chr === "A") { // carquois
+  if (e.chr === "A") { // carquois
     ctx.save(); ctx.translate(x, y + bob);
     ctx.fillStyle = "#8a5a33"; ctx.fillRect(-4, -6, 8, 13);
     ctx.fillStyle = "#b98a2f"; ctx.fillRect(-4, -6, 8, 3);
@@ -927,61 +971,116 @@ function drawArrow(a) {
   ctx.restore();
 }
 
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+  else ctx.rect(x, y, w, h);
+}
+
 function drawPlayer() {
   const p = player;
   if (p.invuln > 0 && (tick % 8 < 3)) return; // clignote quand touché
-  const x = p.x + p.w / 2, y = p.y;
+  const cx = p.x + p.w / 2;
+  // ombre douce au sol
+  if (p.onGround) {
+    ctx.fillStyle = "rgba(20,20,30,0.18)";
+    ctx.beginPath(); ctx.ellipse(cx, p.y + p.h + 1.5, 8, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(cx, p.y);
   if (p.facing < 0) ctx.scale(-1, 1);
   const run = p.onGround && Math.abs(p.vx) > 0.3 ? Math.sin(p.anim) : 0;
   const air = !p.onGround;
-  // jambes (pantalon bleu)
-  ctx.fillStyle = "#4a6fd0";
-  if (air) { ctx.fillRect(-5, 14, 4, 8); ctx.fillRect(1, 12, 4, 8); }
-  else { ctx.fillRect(-5 + run * 2, 14, 4, 8); ctx.fillRect(1 - run * 2, 14, 4, 8); }
-  // mocassins
-  ctx.fillStyle = "#8a5a33";
-  if (air) { ctx.fillRect(-6, 20, 5, 3); ctx.fillRect(1, 18, 5, 3); }
-  else { ctx.fillRect(-6 + run * 2, 20, 5, 3); ctx.fillRect(0 - run * 2, 20, 5, 3); }
-  // corps (tunique claire)
-  ctx.fillStyle = "#f5e9d0";
-  ctx.fillRect(-5, 6, 11, 9);
-  ctx.fillStyle = "#e0b13c";
-  ctx.fillRect(-5, 13, 11, 2);
-  // bras + arc
-  if (p.shootAnim > 0 && hasBow) {
-    ctx.fillStyle = "#d9a066"; ctx.fillRect(2, 8, 8, 3);
-    ctx.strokeStyle = "#8a5a33"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(9, 9, 6, -Math.PI / 2.4, Math.PI / 2.4); ctx.stroke();
-    ctx.strokeStyle = "#e8dcc8"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(11, 3.7); ctx.lineTo(11, 14.3); ctx.stroke();
+  ctx.rotate(air ? 0.1 : Math.abs(p.vx) * 0.05); // penché vers l'avant
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+  const SKIN = "#e8b47e", PANT = "#3f66c9", TUNIC = "#f6ecd6",
+        TRIM = "#e0b13c", MOC = "#8a5a33", HAIR = "#14141c",
+        OUT = "rgba(45,32,20,0.5)";
+
+  function leg(x0, y0, x1, y1, fx, fy) {
+    ctx.strokeStyle = PANT; ctx.lineWidth = 4.2;
+    ctx.beginPath(); ctx.moveTo(x0, y0);
+    ctx.quadraticCurveTo((x0 + x1) / 2 + 0.5, (y0 + y1) / 2, x1, y1); ctx.stroke();
+    ctx.strokeStyle = MOC; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(fx, fy); ctx.stroke();
+  }
+
+  // jambes
+  if (air) {
+    leg(-1, 13, -4.5, 19, -6.5, 20);   // jambe arrière repliée
+    leg(1, 13, 4, 18, 6.5, 18.5);      // jambe avant tendue
+  } else if (Math.abs(run) > 0.05) {
+    leg(0, 13, -2.5 + run * 3.4, 19.6, -3.5 + run * 4.4, 21);
+    leg(0, 13, 2.5 - run * 3.4, 19.6, 3.5 - run * 4.4, 21);
   } else {
-    ctx.fillStyle = "#d9a066";
-    ctx.fillRect(-7, 7, 3, 7 + run * 1.5);
-    ctx.fillRect(4, 7, 3, 7 - run * 1.5);
-    if (hasBow) { // arc dans le dos
-      ctx.strokeStyle = "#8a5a33"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(-4, 10, 7, Math.PI * 0.6, Math.PI * 1.4); ctx.stroke();
+    leg(-1.5, 13, -2.2, 19.8, -4, 21);
+    leg(1.5, 13, 2.2, 19.8, 4.2, 21);
+  }
+
+  // buste : tunique aux bords arrondis, ceinture à franges
+  ctx.fillStyle = TUNIC;
+  rr(-5.5, 5, 11, 10, 3); ctx.fill();
+  ctx.strokeStyle = OUT; ctx.lineWidth = 0.9;
+  rr(-5.5, 5, 11, 10, 3); ctx.stroke();
+  ctx.fillStyle = TRIM; ctx.fillRect(-5.5, 12.4, 11, 2);
+  ctx.strokeStyle = TRIM; ctx.lineWidth = 1;
+  for (let i = -4; i <= 4; i += 2) {
+    ctx.beginPath(); ctx.moveTo(i, 14.4); ctx.lineTo(i, 15.8); ctx.stroke();
+  }
+
+  // bras (et arc à la main dès le niveau 3)
+  if (p.shootAnim > 0 && hasBow) {
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(9, 8.5); ctx.stroke();   // bras qui tient l'arc
+    ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(-2.5, 11); ctx.stroke(); // bras qui lâche la corde
+    ctx.strokeStyle = "#7a4a26"; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.arc(9, 9, 7, -Math.PI / 2.3, Math.PI / 2.3); ctx.stroke();
+    ctx.strokeStyle = "#efe6d2"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(11.4, 2.7); ctx.lineTo(-2, 10.5); ctx.lineTo(11.4, 15.3); ctx.stroke();
+  } else {
+    const sw = air ? 2.2 : run * 2.8;
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(-3, 7); ctx.quadraticCurveTo(-5, 10, -4 - sw, 13.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(3, 7); ctx.quadraticCurveTo(5, 10, 4 + sw, 13.2); ctx.stroke();
+    if (hasBow) { // l'arc tenu dans la main avant
+      const hx = 4 + sw;
+      ctx.strokeStyle = "#7a4a26"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(hx + 1, 12.5, 6, -Math.PI / 2.2, Math.PI / 2.2); ctx.stroke();
+      ctx.strokeStyle = "#efe6d2"; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(hx + 3, 7); ctx.lineTo(hx + 3, 18); ctx.stroke();
     }
   }
-  // tête
-  ctx.fillStyle = "#d9a066";
-  ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
-  // cheveux
-  ctx.fillStyle = "#1d1d24";
-  ctx.beginPath(); ctx.arc(0, -1.5, 6, Math.PI * 0.95, Math.PI * 2.05); ctx.fill();
-  ctx.fillRect(-6, -2, 12, 2.5);
-  // bandeau + plume
-  ctx.fillStyle = "#e25555"; ctx.fillRect(-6, -3, 12, 2);
-  ctx.save(); ctx.translate(-3, -8); ctx.rotate(-0.25);
+
+  // tête ronde et expressive
+  ctx.fillStyle = SKIN;
+  ctx.beginPath(); ctx.arc(0.5, -0.5, 6.6, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = OUT; ctx.lineWidth = 0.9;
+  ctx.beginPath(); ctx.arc(0.5, -0.5, 6.6, 0, Math.PI * 2); ctx.stroke();
+  // cheveux noirs : calotte + mèche sur la nuque (avant le visage)
+  ctx.fillStyle = HAIR;
+  ctx.beginPath(); ctx.arc(0.5, -1.2, 6.6, Math.PI * 0.92, Math.PI * 2.06); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-4.6, 1.6, 2.3, 4.4, 0.15, 0, Math.PI * 2); ctx.fill();
+  // bandeau rouge
+  ctx.fillStyle = "#e04f4f";
+  rr(-6.2, -4.2, 13.4, 2.6, 1.2); ctx.fill();
+  // sourire + petit nez
+  ctx.strokeStyle = "#5a3a22"; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.arc(3.2, 1.8, 2.3, 0.25, Math.PI * 0.75); ctx.stroke();
+  ctx.beginPath(); ctx.arc(6.2, 0.2, 1.1, -1.2, 1.1); ctx.stroke();
+  // œil : blanc + pupille (par-dessus cheveux et bandeau)
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath(); ctx.ellipse(3.2, -1.2, 1.8, 2.1, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#20222c";
+  ctx.beginPath(); ctx.arc(3.8, -1, 1.05, 0, Math.PI * 2); ctx.fill();
+  // plume jaune dressée, nervure au centre
+  ctx.save(); ctx.translate(-2.5, -10); ctx.rotate(-0.18);
   ctx.fillStyle = "#f7d774";
-  ctx.beginPath(); ctx.ellipse(0, 0, 2, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, 0, 2.1, 5.6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "#d8930f"; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
   ctx.restore();
-  // œil + sourire
-  ctx.fillStyle = "#1d1d24"; ctx.fillRect(2, -1, 1.8, 1.8);
-  ctx.strokeStyle = "#1d1d24"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(2.5, 2, 2, 0.2, Math.PI * 0.8); ctx.stroke();
+
   ctx.restore();
 }
 
@@ -996,17 +1095,11 @@ function drawHUD() {
     ctx.fill();
     ctx.restore();
   }
-  // Plumes
-  ctx.save(); ctx.translate(20, 34); ctx.rotate(0.3);
-  ctx.fillStyle = "#f7d774";
-  ctx.beginPath(); ctx.ellipse(0, 0, 3.5, 8, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
   ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
   ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 3;
-  ctx.strokeText("× " + feathersGot, 30, 39); ctx.fillText("× " + feathersGot, 30, 39);
   // Flèches
   if (hasBow) {
-    ctx.save(); ctx.translate(20, 56);
+    ctx.save(); ctx.translate(20, 36);
     ctx.strokeStyle = "#8a5a33"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(0, 0, 7, -Math.PI / 2.2, Math.PI / 2.2); ctx.stroke();
     ctx.strokeStyle = "#e8dcc8"; ctx.lineWidth = 1;
@@ -1015,7 +1108,7 @@ function drawHUD() {
     const col = arrowCount > 0 ? "#fff" : "#ffb0b0";
     ctx.fillStyle = col;
     ctx.strokeStyle = "rgba(0,0,0,0.4)";
-    ctx.strokeText("× " + arrowCount, 32, 61); ctx.fillText("× " + arrowCount, 32, 61);
+    ctx.strokeText("× " + arrowCount, 32, 41); ctx.fillText("× " + arrowCount, 32, 41);
   }
   // Niveau
   ctx.textAlign = "right"; ctx.font = "bold 12px sans-serif";
@@ -1072,7 +1165,7 @@ function showOverlay(title, sub, btn) {
 overlayBtn.addEventListener("click", () => {
   overlay.classList.add("hidden");
   ac(); // débloque l'audio au premier geste
-  feathersGot = 0; arrowCount = 0; hasBow = false;
+  arrowCount = 0; hasBow = false;
   loadLevel(0);
   state = "play";
 });
