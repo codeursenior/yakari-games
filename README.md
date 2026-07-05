@@ -15,6 +15,12 @@ haute, toucher-la-carte pour se déplacer, une plume par plateau réussi.
 | EP21 | Yakari et le condor | [`yakari-ep21-yakari-et-le-condor/`](yakari-ep21-yakari-et-le-condor/) |
 | EP23 | Le mystère de la falaise | [`yakari-ep23-le-mystere-de-la-falaise/`](yakari-ep23-le-mystere-de-la-falaise/) |
 
+S'y ajoute un **jeu de plateforme** (façon Aladdin, défilement horizontal)
+qui reprend le scénario de l'épisode 21 : saut, arc à flèches limitées,
+3 cœurs et retour au niveau 1 en cas de défaite — tout en restant très
+facile. Il a son propre moteur, indépendant de `yakari-engine/` :
+[`yakari-ep21-condor-plateforme/`](yakari-ep21-condor-plateforme/).
+
 `index.html` à la racine est le menu qui les rassemble.
 
 ## Comment jouer

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Yakari et le condor — plateforme</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🏹</text></svg>">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  min-height: 100%;
+  background: #2b3a55;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px 20px;
+  gap: 8px;
+}
+#topbar {
+  width: min(96vw, 720px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#topbar a {
+  color: #f7d774;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: bold;
+}
+#soundToggle {
+  background: #fff8e7;
+  border: 3px solid #b98a2f;
+  border-radius: 12px;
+  font-size: 18px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+#stageWrap {
+  position: relative;
+  width: min(96vw, 720px);
+}
+canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border: 6px solid #b98a2f;
+  border-radius: 14px;
+  background: #7ec8e3;
+  image-rendering: pixelated;
+}
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(24, 34, 56, 0.88);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 16px;
+}
+#overlay.hidden { display: none; }
+#overlayTitle {
+  color: #f7d774;
+  font-size: clamp(22px, 5vw, 38px);
+  text-shadow: 3px 3px 0 #4a3218;
+}
+#overlaySub {
+  color: #fff8e7;
+  font-size: clamp(14px, 3vw, 19px);
+  max-width: 480px;
+  line-height: 1.4;
+}
+#overlayBtn {
+  font-family: inherit;
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: bold;
+  color: #4a3218;
+  background: #f7d774;
+  border: 4px solid #b98a2f;
+  border-radius: 18px;
+  padding: 10px 28px;
+  cursor: pointer;
+}
+#overlayBtn:active { transform: scale(0.96); }
+#narration {
+  width: min(96vw, 720px);
+  background: #fff8e7;
+  border: 4px solid #b98a2f;
+  border-radius: 14px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+}
+#replayVoice {
+  background: #f7d774;
+  border: 3px solid #b98a2f;
+  border-radius: 12px;
+  font-size: 18px;
+  padding: 2px 8px;
+  cursor: pointer;
+  flex: none;
+}
+#narrationText {
+  color: #4a3218;
+  font-size: clamp(14px, 2.6vw, 17px);
+  line-height: 1.35;
+}
+#touchpad {
+  display: none;
+  width: min(96vw, 720px);
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+@media (pointer: coarse) {
+  #touchpad { display: flex; }
+}
+.tgroup { display: flex; gap: 12px; }
+.tbtn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 4px solid #b98a2f;
+  background: #fff8e7;
+  color: #4a3218;
+  font-size: 30px;
+  font-family: inherit;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tbtn:active { background: #f7d774; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <a href="../">← Tous les jeux</a>
+  <button id="soundToggle" title="Activer ou couper la voix">🔊</button>
+</div>
+<div id="stageWrap">
+  <canvas id="game" width="480" height="320"></canvas>
+  <div id="overlay">
+    <h1 id="overlayTitle">Yakari et le condor</h1>
+    <p id="overlaySub">La grande aventure plateforme : cours, saute, et tire à l'arc pour sauver la rivière !</p>
+    <button id="overlayBtn">▶ Jouer</button>
+  </div>
+</div>
+<div id="touchpad">
+  <div class="tgroup">
+    <button class="tbtn" id="btnL">◀</button>
+    <button class="tbtn" id="btnR">▶</button>
+  </div>
+  <div class="tgroup">
+    <button class="tbtn" id="btnS">🏹</button>
+    <button class="tbtn" id="btnJ">⬆</button>
+  </div>
+</div>
+<div id="narration">
+  <button id="replayVoice" title="Réécouter">🗣️</button>
+  <p id="narrationText"></p>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
