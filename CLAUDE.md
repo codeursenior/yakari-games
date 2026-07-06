@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Browser games for a young child, based on episodes of the *Yakari* cartoon.
 Two families of games:
 
-- **Four episode games** (`yakari-ep16/17/21/23-*`), Game-Boy-Color style
+- **Five episode games** (`yakari-ep16/17/21/23/56-*`), Game-Boy-Color style
   (top-down view, grid movement, camera follow, interact by walking into
   things). No failure states, no game over, spoken narration (French
   `speechSynthesis`), one feather earned per completed board.

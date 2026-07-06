@@ -1,6 +1,6 @@
 # Les jeux Yakari 🪶
 
-Quatre jeux navigateur façon **Pokémon sur Game Boy Color** (vue de dessus,
+Cinq jeux navigateur façon **Pokémon sur Game Boy Color** (vue de dessus,
 déplacement case par case, caméra qui suit, on interagit en marchant contre
 les choses), un par épisode du dessin animé Yakari. Pensés pour une enfant de
 3 ans qui joue avec un parent : aucun échec possible, narration lue à voix
@@ -14,6 +14,7 @@ haute, toucher-la-carte pour se déplacer, une plume par plateau réussi.
 | EP17 | Yakari sur l'île (Les prisonniers de l'île) | [`yakari-ep17-les-prisonniers-de-l-ile/`](yakari-ep17-les-prisonniers-de-l-ile/) |
 | EP21 | Yakari et le condor | [`yakari-ep21-yakari-et-le-condor/`](yakari-ep21-yakari-et-le-condor/) |
 | EP23 | Le mystère de la falaise | [`yakari-ep23-le-mystere-de-la-falaise/`](yakari-ep23-le-mystere-de-la-falaise/) |
+| EP56 | La piste des voleurs | [`yakari-ep56-la-piste-des-voleurs/`](yakari-ep56-la-piste-des-voleurs/) |
 
 S'y ajoute un **jeu de plateforme** (façon Aladdin, défilement horizontal)
 qui reprend le scénario de l'épisode 21 : saut, arc à flèches limitées,
